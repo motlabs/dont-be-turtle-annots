@@ -32,3 +32,4 @@
 datasets/full
 *.swo
 *.swp
+public/uploads
