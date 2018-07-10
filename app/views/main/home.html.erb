@@ -1,3 +1,78 @@
-<h1 class="mt-5">Sticky footer</h1>
-<p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS.</p>
-<p>Use <a href="../sticky-footer-navbar">the sticky footer with a fixed navbar</a> if need be, too.</p>
+<h1 class="mt-5">Annotate photos, please</h1>
+
+<% if @photo.nil? %>
+  <p class="lead">No photos</p>
+<% else %>
+  <p class="lead">How to annotate:</p>
+  <ol>
+	<li>Head</li>
+	<li>Neck</li>
+	<li>Right Shoulder</li>
+	<li>Left Shoulder</li>
+  </ol>
+
+  <%= link_to "Next photo", root_path, class: "btn btn-block btn-primary" %><br>
+
+  <canvas id="canvas-board" width="700" height="700" style="display: block; margin: 0 auto; background: gray; border: 1px solid black"></canvas>
+  <%= image_tag @photo.attachment.url, style: "display: none;", id: "img-target" %>
+  <div id="annotation">
+	<h5>Current: <span id="status"></span></h5>
+	<ol>
+	  <li>Head: <span id="status-head">not yet</span></li>
+	  <li>Neck: <span id="status-neck">not yet</span></li>
+	  <li>Right Shoulder: <span id="status-rshoulder">not yet</span></li>
+	  <li>Left Shoulder: <span id="status-lshoulder">not yet</span></li>
+	</ol>
+  </div>
+
+  <br><%= link_to "Next photo", root_path, class: "btn btn-block btn-primary" %>
+<% end %>
+
+<script tpye="text/javascript">
+  var stepstr = ["head", "neck", "rshoulder", "lshoulder", "Done. Thank you so much"];
+  var step;
+  var data = {};
+  function loadStatus(step) {
+	console.log('current status:', stepstr[step]);
+	$('span#status').html(stepstr[step]);
+  }
+  function updatePosition(step, e) {
+	var key = "status-"+stepstr[step];
+	var occludedstr = "occluded";
+	var occluded = e.button;
+	if(occluded == 0) {
+	  occludedstr = "not occluded";
+	}
+	console.log('update', key, e.layerX, e.layerY);
+	$("#"+key).html("("+e.layerX+","+e.layerY+","+occludedstr+")");
+  }
+  function init() {
+	step = 0;
+	loadStatus(step);
+	$('img').bind('contextmenu', function(e){
+	  return false;
+	}); 
+	$('canvas').bind('contextmenu', function(e){
+	  return false;
+	}); 
+  }
+  $(document).ready(function() {
+	var c = document.getElementById("canvas-board");
+	var ctx = c.getContext("2d");
+	var img = document.getElementById("img-target");
+	ctx.drawImage(img, 0, 0, img.width, img.height);
+	c.addEventListener('mousedown', function(e) {
+	  console.log('click', e.layerX, e.layerY, e.button);
+
+	  if(step < 4) {
+		updatePosition(step, e);
+		step += 1;
+		loadStatus(step);
+	  }
+	  else {
+		alert("Click 'New Photo'");
+	  }
+	});
+	init();
+  });
+</script>
