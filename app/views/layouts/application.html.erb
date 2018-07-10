@@ -10,6 +10,14 @@
   </head>
 
   <body>
-    <%= yield %>
+    <main role="main" class="container">
+      <%= yield %>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <span class="text-muted">Annotation tools for <a href="https://github.com/motlabs/dont-be-turtle" target="_blank">Don't be turtle</a>. &copy; <a href="http://github.com/tantara" target="_blank">tantara</a></span>
+      </div>
+    </footer>
   </body>
 </html>
