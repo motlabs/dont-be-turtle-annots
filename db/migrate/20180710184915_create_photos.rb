@@ -3,7 +3,7 @@ class CreatePhotos < ActiveRecord::Migration[5.2]
     create_table :photos do |t|
       t.boolean :done, default: false
       t.boolean :is_turtle
-      t.boolean :code
+      t.string :code
 
       t.integer :head_x, default: 0
       t.integer :head_y, default: 0

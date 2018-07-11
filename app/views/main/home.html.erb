@@ -1,14 +1,13 @@
-<h1 class="mt-5">Annotate photos, please</h1>
-
 <% if @photo.nil? %>
   <p class="lead">No photos</p>
 <% else %>
   <p class="lead">How to annotate:</p>
   <ol>
-	<li><span class="color head">Head</span></li>
-	<li><span class="color neck">Neck</span></li>
-	<li><span class="color rshoulder">Right Shoulder</span></li>
-	<li><span class="color lshoulder">Left Shoulder</span></li>
+    <li><span class="color head">Head</span>: Mark the center of the forehead of the face.</li>
+    <li><span class="color neck">Neck</span>: The lower part of the neck, the center of the border of the clothing and the skin, assumes occlusion if the neck is invisible.</li>
+    <li><span class="color rshoulder">Right Shoulder</span>: Mark at the center of the shoulder. Make sure that both shoulders are in a straight line.</li>
+    <li><span class="color lshoulder">Left Shoulder</span>: Mark at the center of the shoulder. Make sure that both shoulders are in a straight line.</li>
+    <b>*Left click: Visible, Right Click: Unvisible(e.g. Occluded)</b>
   </ol>
 
   <%= link_to "Next photo", root_path, class: "btn btn-block btn-primary" %><br>
@@ -16,34 +15,34 @@
   <canvas id="canvas-board" width="700" height="700" style="display: block; margin: 0 auto; background: gray; border: 1px solid black"></canvas>
   <%= image_tag @photo.attachment.url, style: "display: none;", id: "img-target" %>
   <div id="annotation">
-	<h5>Current: <span id="status"></span></h5>
-	<ol>
-	  <li>
-		<span class="color head">Head</span>: <span id="status-head">not yet</span>
-		<button id="btn-head" class="btn btn-sm btn-danger">x</button>
-	  </li>
-	  <li>
-		<span class="color neck">Neck</span>: <span id="status-neck">not yet</span>
-		<button id="btn-neck" class="btn btn-sm btn-danger">x</button>
-	  </li>
-	  <li>
-		<span class="color rshoulder">Right Shoulder</span>: <span id="status-rshoulder">not yet</span>
-		<button id="btn-rshoulder" class="btn btn-sm btn-danger">x</button>
-	  </li>
-	  <li>
-		<span class="color lshoulder">Left Shoulder</span>: <span id="status-lshoulder">not yet</span>
-		<button id="btn-lshoulder" class="btn btn-sm btn-danger">x</button>
-	  </li>
-	</ol>
+    <b>*Left click: Visible, Right Click: Unvisible(e.g. Occluded)</b>
+    <h5>Current: <span id="status"></span></h5>
+    <ol>
+      <li>
+        <span class="color head">Head</span>: <span id="status-head">not yet</span>
+        <button id="btn-head" class="btn btn-sm btn-danger">x</button>
+      </li>
+      <li>
+        <span class="color neck">Neck</span>: <span id="status-neck">not yet</span>
+        <button id="btn-neck" class="btn btn-sm btn-danger">x</button>
+      </li>
+      <li>
+        <span class="color rshoulder">Right Shoulder</span>: <span id="status-rshoulder">not yet</span>
+        <button id="btn-rshoulder" class="btn btn-sm btn-danger">x</button>
+      </li>
+      <li>
+        <span class="color lshoulder">Left Shoulder</span>: <span id="status-lshoulder">not yet</span>
+        <button id="btn-lshoulder" class="btn btn-sm btn-danger">x</button>
+      </li>
+    </ol>
   </div>
 
   <br><%= link_to "Next photo", root_path, class: "btn btn-block btn-primary" %>
-<% end %>
 
 <style type="text/css">
   .btn-sm { display: none; }
   .color { 
-	font-weight: bold;
+    font-weight: bold;
   }
   .color.head { color: red; }
   .color.neck { color: green; }
@@ -56,15 +55,58 @@
   var step2str = ["head", "neck", "rshoulder", "lshoulder", "Done. Thank you so much"];
   var step2color = ["red", "green", "blue", "orange"];
   var btn2step = {
-	"btn-head": 0,
-	"btn-neck": 1,
-	"btn-rshoulder": 2,
-	"btn-lshoulder": 3,
+    "btn-head": 0,
+    "btn-neck": 1,
+    "btn-rshoulder": 2,
+    "btn-lshoulder": 3,
   };
   var step;
   var data = {};
-  function update() {
+  function dataURLtoBlob() {
+    var c = document.getElementById("canvas-board");
+    var dataURL = c.toDataURL('image/jpeg');
+    // Decode the dataURL    
+    var binary = atob(dataURL.split(',')[1]);
+    // Create 8-bit unsigned array
+    var array = [];
+    for(var i = 0; i < binary.length; i++) {
+      array.push(binary.charCodeAt(i));
+    }
+    // Return our Blob object
+    return new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
+  }
+  function update(step, e) {
+	if(step == 0) {
+	  data['head_x'] = e.layerX;
+	  data['head_y'] = e.layerX;
+	  data['head_occluded'] = e.button;
+	}
+	else if(step == 1) {
+	  data['neck_x'] = e.layerX;
+	  data['neck_y'] = e.layerX;
+	  data['neck_occluded'] = e.button;
+	}
+	else if(step == 2) {
+	  data['rshoulder_x'] = e.layerX;
+	  data['rshoulder_y'] = e.layerX;
+	  data['rshoulder_occluded'] = e.button;
+	}
+	else if(step == 3) {
+	  data['lshoulder_x'] = e.layerX;
+	  data['lshoulder_y'] = e.layerX;
+	  data['lshoulder_occluded'] = e.button;
+	  //data['result'] = dataURLtoBlob();
+	}
+	console.log('ajax', data);
 	//TODO
+
+	$.ajax("/photos/"+photoId, {
+	  type: 'PUT',
+	  data: { photo: data }
+	})
+	.done(function(res) {
+	  console.log("Data Loaded: ", res);
+	});
   };
   function pinPoint(step, e, undo) {
 	var x = e.layerX;
@@ -116,6 +158,7 @@
 	console.log('update', key, e.layerX, e.layerY);
 	$("#"+key).html("("+e.layerX+","+e.layerY+","+occludedstr+")");
 	pinPoint(step, e, false);
+	update(step, e);
   }
   function cancelStep(stepstr) {
 	var nextStep = btn2step[stepstr];
@@ -163,3 +206,4 @@
 	init();
   });
 </script>
+<% end %>

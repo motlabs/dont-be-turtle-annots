@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_07_10_191341) do
+ActiveRecord::Schema.define(version: 2018_07_11_030224) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -53,7 +53,7 @@ ActiveRecord::Schema.define(version: 2018_07_10_191341) do
   create_table "photos", force: :cascade do |t|
     t.boolean "done", default: false
     t.boolean "is_turtle"
-    t.boolean "code"
+    t.string "code"
     t.integer "head_x", default: 0
     t.integer "head_y", default: 0
     t.integer "head_occluded", default: 0
@@ -69,6 +69,8 @@ ActiveRecord::Schema.define(version: 2018_07_10_191341) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "attachment"
+    t.string "result"
+    t.boolean "confirmed", default: false
   end
 
   create_table "users", force: :cascade do |t|
